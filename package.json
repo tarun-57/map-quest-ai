@@ -1,0 +1,11 @@
+{
+  "name": "map-quest-ai",
+  "version": "1.0.0",
+  "description": "Guess the location of the street view with the help of AI",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

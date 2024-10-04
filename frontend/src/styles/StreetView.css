@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Lilita+One&display=swap');
+.map-view-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: transparent;
+    z-index: 1;
+}
+.map-view-btn {
+    width: 100%;
+    height: 40px;
+    margin-top: 5px;
+    border-radius: 8px;
+    font-weight: 400;
+    font-family: "Lilita One", sans-serif;
+}
+.guess-btn {
+    cursor: pointer;
+    color: black;
+    background-color: rgb(236, 236, 0);
+}
+.place-pin {
+    cursor: not-allowed;
+    opacity: 0.7;
+    background: rgb(70, 70, 70);
+    color: whitesmoke;
+}
+.gm-compass{
+    display: none;
+}
