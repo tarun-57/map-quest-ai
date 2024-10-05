@@ -25,7 +25,7 @@ const streetCoord = geoList[Math.floor(Math.random() * 60569)];
 const StreetView = () => {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyDYojjoWpTCxvr2983WBK7GM626n0Jk9ro", // Replace with your API key
+    googleMapsApiKey: process.env.GCP_API_KEY, // Replace with your API key
   });
 
   const navigate = useNavigate();
