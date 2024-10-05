@@ -12,7 +12,7 @@ const App = () => {
   const navigate = useNavigate();
 
   function startGame() {
-    navigate('/game');
+    navigate('/play');
   }
 
   return (
