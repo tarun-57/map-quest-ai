@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import {
   GoogleMap,
   Marker,
+  MarkerF,
   Polyline,
   useLoadScript,
 } from "@react-google-maps/api";
@@ -81,27 +82,27 @@ const MapView = ({ streetCoord, setIsMapClicked, setClickedCoords, isGuessed, is
         onClick={onMapClick} // Map click event to set marker position
       >
         {/* Marker for streetCoord with a custom icon */}
-        <Marker
+        {/* <Marker
             position={streetCoord}
             // icon={{
             //   url: "https://fontawesome.com/icons/flag-checkered?f=classic&s=solid",  // Custom icon for streetCoord
             //   scaledSize: new window.google.maps.Size(40, 40),  // Adjust the size if needed
             // }}
-          />
+          /> */}
 
         {/* Marker for the clicked coordinates */}
         {clickCoords && (
           <>
-            {/* {isGuessed ? */}
-                <Marker
+            {isGuessed ?
+                <MarkerF
                 position={streetCoord}
                 icon={{
                     url: require("../static/icons/flag.png"),
                     scaledSize: { width: 32, height: 32 },
                 }}
                 />
-            {/* : <></>} */}
-            <Marker
+            : <></>}
+            <MarkerF
               position={clickCoords}
               // icon={{
               //     url: "https://fontawesome.com/icons/flag-checkered?f=classic&s=solid",  // Custom icon for streetCoord

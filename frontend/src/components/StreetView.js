@@ -7,6 +7,7 @@ import {
 import MapView from "./MapView";
 import "../styles/StreetView.css";
 import ResultView from "./ResultView";
+import TimerComponent from "./TimerComponent";
 import geoList from "../static/data/coordinates.js"
 import { Navigate, useNavigate } from "react-router-dom";
 
@@ -25,7 +26,7 @@ const streetCoord = geoList[Math.floor(Math.random() * 60569)];
 const StreetView = () => {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.GCP_API_KEY, // Replace with your API key
+    googleMapsApiKey: process.env.REACT_APP_GCP_API_KEY, // Replace with your API key
   });
 
   const navigate = useNavigate();
@@ -35,6 +36,19 @@ const StreetView = () => {
   const [clickedCoords, setClickedCoords] = useState({});
   const [isGuessed, setIsGuessed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  const handleTimeUp = () => {
+    console.log('Time is up!');
+    // You can trigger the end of the game or other logic here
+    const coords = {
+      clickedCoords: null,
+      streetCoord: streetCoord
+    };
+    const madeAGuess = false;
+    setTimeout(() => {
+      navigate('/result', { state: { coords: coords, madeAGuess: madeAGuess } });
+    }, 0);
+  };
 
   const handleGuess = () => {
     console.log("guess is clicked");
@@ -69,6 +83,7 @@ const StreetView = () => {
     // !isGuessed ? (
       <div>
         <div ref={mapRef} style={containerStyle}></div>
+        <div className="timer-container"><TimerComponent onTimeUp={handleTimeUp} /></div>
         <div
           className="map-view-container"
           onMouseEnter={() => setIsHovered(true)}
