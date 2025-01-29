@@ -6,7 +6,8 @@ import {
 //   useLoadScript,
 } from "@react-google-maps/api";
 import { useLocation } from "react-router-dom";
-// import {computeHeading} from "google.maps"
+import { useStateContext } from "../state/StateContext";
+import "../styles/ResultView.css";
 
 const mapContainerStyle = {
   width: "800px",
@@ -46,7 +47,7 @@ function calculatePoints2(distance, timeTaken) {
   const A = 2000;  // Controls the steepness of score drop based on distance
   const B = 0.001; // Adjusts how fast score decreases with distance
   const maxPoints = 5000;
-  const maxTime = 120; // 2 minutes in seconds
+  const maxTime = 120; // time in seconds
 
   // Ensure timeTaken is within the range [0, maxTime]
   timeTaken = Math.min(Math.max(timeTaken, 0), maxTime);
@@ -63,10 +64,10 @@ function calculatePoints2(distance, timeTaken) {
 }
 
 
-function calculatePoints(distance) {
+function calculatePoints(distance, maxScore) {
   const A = 2000;  // Controls the steepness of score drop
   const B = 0.001; // Adjusts how fast score decreases with distance
-  const maxPoints = 5000;
+  const maxPoints = maxScore;
 
   // Calculate points based on the formula
   let points = maxPoints - A * Math.log(B * distance + 1);
@@ -101,16 +102,26 @@ function calculateZoom(dist) {
 
 const ResultView = () => {
 
-  const location = useLocation();
+  // const location = useLocation();
+  const { state, updateState } = useStateContext();
 
-  const { clickedCoords, streetCoord } = location.state.coords || {};
-  const madeAGuess = location.state.madeAGuess || undefined;
+  // useEffect(() => {
+
+  // })
+  const { clickedCoords, streetCoord } = state?.coords || {};
+  const madeAGuess = state?.madeAGuess || undefined;
   const mapCenter = clickedCoords ? {
     lat: (clickedCoords.lat + streetCoord.lat) / 2,
     lng: (clickedCoords.lng + streetCoord.lng) / 2,
     // lat: 0,
     // lng: 0
   } : streetCoord;
+  console.log("hiii")
+  // console.log("location", location)
+  console.log("clickedCoords", clickedCoords)
+  console.log("streetCoord", streetCoord)
+  console.log("madeAGuess", madeAGuess)
+
 
   const mapRef = useRef();
 
@@ -132,9 +143,12 @@ const ResultView = () => {
     ? calculateDistance(streetCoord, clickedCoords)
     : undefined;
 
-  const score = calculatePoints(distance);
+  const score = calculatePoints(distance, state.maxScore);
 
   const zoom = madeAGuess ? calculateZoom(distance) : 7;
+
+  console.log("distance",distance)
+  console.log("score",score)
 
   // useEffect(() => {
   //   if (mapRef.current && clickedCoords && streetCoord) {
@@ -144,49 +158,51 @@ const ResultView = () => {
   // }, [clickedCoords, streetCoord]);
 
   return (
-    <div>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        zoom={zoom}
-        center={mapCenter} // Center the map around streetCoord
-        options={options}
-        // mapId: {'new-map-id'}
-        // heading: {180}
-        // onLoad={(map) => (mapRef.current = map)}
-      >
-        {streetCoord &&
-          (<MarkerF
-            position={streetCoord}
-            icon={{
-              url: require("../static/icons/flag.png"),
-              scaledSize: { width: 32, height: 32 },
-            }}
-            />)
-        }
-        {clickedCoords && (<>
-          <MarkerF
-            position={clickedCoords}
-          />
-        </>)}
+    <div className="result-view">
+      <div className="map-wrapper">
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          zoom={zoom}
+          center={mapCenter} // Center the map around streetCoord
+          options={options}
+          // mapId: {'new-map-id'}
+          // heading: {180}
+          // onLoad={(map) => (mapRef.current = map)}
+        >
+          {streetCoord &&
+            (<MarkerF
+              position={streetCoord}
+              icon={{
+                url: require("../static/icons/flag.png"),
+                scaledSize: { width: 32, height: 32 },
+              }}
+              />)
+          }
+          {clickedCoords && (<>
+            <MarkerF
+              position={clickedCoords}
+            />
+          </>)}
 
-        {/* Polyline (dotted line) between streetCoord and the clicked coordinates */}
-        {clickedCoords && streetCoord && (<PolylineF
-          path={[streetCoord, clickedCoords]} // Define the path between the two points
-          options={{
-            strokeColor: "#000", // Line color
-            // strokeOpacity: 0.2,
-            strokeWeight: 0,
-            // geodesic: true,
-            icons: [
-              {
-                icon: { path: "M 0,-1 0,1", strokeOpacity: 0.8, scale: 2 },
-                offset: "0",
-                repeat: "10px", // Dotted pattern
-              },
-            ],
-          }}
-        />)}
-      </GoogleMap>
+          {/* Polyline (dotted line) between streetCoord and the clicked coordinates */}
+          {clickedCoords && streetCoord && (<PolylineF
+            path={[streetCoord, clickedCoords]} // Define the path between the two points
+            options={{
+              strokeColor: "#000", // Line color
+              // strokeOpacity: 0.2,
+              strokeWeight: 0,
+              // geodesic: true,
+              icons: [
+                {
+                  icon: { path: "M 0,-1 0,1", strokeOpacity: 0.8, scale: 2 },
+                  offset: "0",
+                  repeat: "10px", // Dotted pattern
+                },
+              ],
+            }}
+          />)}
+        </GoogleMap>
+      </div>
 
       {/* Show the distance between streetCoord and the clicked point */}
       {clickedCoords ?
@@ -195,7 +211,7 @@ const ResultView = () => {
             position: "absolute",
             bottom: 10,
             left: 10,
-            background: "white",
+            background: "blue",
             padding: "10px",
           }}
         >
@@ -209,7 +225,7 @@ const ResultView = () => {
             position: "absolute",
             bottom: 10,
             left: 10,
-            background: "white",
+            background: "blue",
             padding: "10px",
           }}
         >
