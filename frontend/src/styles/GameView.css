@@ -2,16 +2,15 @@
 body {
     font-family: "Lilita One", sans-serif;
 }
+/*
 .home {
     height: 100vh;
     width: 100vw;
-    /* background: radial-gradient(#2e2758, #0c0630); */
     background: radial-gradient(#004e92, #000428);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /* background: linear-gradient(180deg, #000428, #004e92); */
 }
 .title {
     color: white;
@@ -22,7 +21,6 @@ body {
 }
 .tagline {
     color: white;
-    /* padding: 30px; */
     font-size: 24px;
     display: flex;
     justify-content: center;
@@ -40,4 +38,255 @@ body {
 .cta-btn {
     display: flex;
     justify-content: center;
-}
+} */
+
+/* General Page Styling */
+body {
+    margin: 0;
+    /* font-family: "Poppins", sans-serif; */
+    color: white;
+    background-color: #000;
+    overflow: hidden;
+  }
+
+  /* Background Stars */
+  .stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
+    z-index: -3;
+    animation: move-stars 30s linear infinite;
+  }
+
+  /* Twinkling Stars */
+  /* .twinkling {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 20;
+    animation: twinkling 2s infinite alternate;
+  }
+
+  @keyframes twinkling {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+  } */
+
+  @keyframes move-stars {
+    from { background-position: 0 0; }
+    to { background-position: -1000px -1000px; }
+  }
+
+  /* Shooting Stars */
+  /* .shooting-star {
+    position: absolute;
+    width: 2px;
+    height: 80px;
+    background: linear-gradient(180deg, white, transparent);
+    border-radius: 50%;
+    z-index: 10;
+    opacity: 0;
+    animation: shooting-star 6s ease-in-out infinite;
+  } */
+
+  /* .shooting-star:nth-child(1) {
+    top: 10%;
+    left: 15%;
+    animation-delay: 0s;
+    animation-duration: 5s;
+  } */
+
+  /* .shooting-star:nth-child(1) {
+    top: 30%;
+    left: 70%;
+    animation-delay: 1s;
+    animation-duration: 6s;
+  } */
+
+  /* .shooting-star:nth-child(1) {
+    top: 50%;
+    left: 40%;
+    animation-delay: 2s;
+    animation-duration: 7s;
+  } */
+
+  /* @keyframes shooting-star {
+    0% {
+      transform: translateX(-200px) translateY(-200px) scale(0.5);
+      opacity: 1;
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(1000px) translateY(1000px) scale(0.5);
+      opacity: 1;
+    }
+  } */
+
+  /* Nebula Glow */
+  .nebula {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1000px;
+    height: 1000px;
+    background: radial-gradient(circle, rgba(255, 20, 147, 0.4), transparent);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    animation: pulse-nebula 10s infinite ease-in-out;
+  }
+
+  @keyframes pulse-nebula {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.4;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.2);
+      opacity: 0.7;
+    }
+  }
+
+  /* Centered Content Styling */
+  .home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+  }
+
+  .content {
+    /* display: none; */
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    width: 90%;
+    max-width: 500px;
+    animation: slide-down 1.2s ease-out;
+    z-index: 2;
+  }
+
+  /* Title and Subtitle */
+  .title {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #ffdf00;
+    /* color: rgb(236, 236, 0); */
+    /* text-shadow: 0 0 10px #ffdf00; */
+    animation: fade-in 1.5s ease-in;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #aadfff;
+    /* text-shadow: 0 0 5px #aadfff; */
+    animation: fade-in 2s ease-in;
+  }
+
+  /* Other styles for inputs and button omitted for brevity, same as before */
+
+  .error-message {
+    color: #ff6666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+    animation: shake 0.3s ease-in-out;
+  }
+
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-5px);
+    }
+    75% {
+      transform: translateX(5px);
+    }
+  }
+
+
+  /* Form Inputs with Animation */
+  .form-group {
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fade-in 2.5s ease-out forwards;
+  }
+
+  label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
+  }
+
+  input:hover, select:hover {
+    /* transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); */
+    outline: none;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+    }
+
+    input:focus, select:focus {
+    outline: none;
+  }
+
+  /* Play Button with Animation */
+  .play-button {
+    background-color: #ff4500;
+    color: white;
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: pulsate 1.5s infinite ease-in-out;
+    box-shadow: 0 0 10px #ff4500;
+  }
+
+  .play-button:hover {
+    transform: scale(1.1);
+    background-color: #ff6347;
+    box-shadow: 0 0 20px #ff6347;
+  }
+
+  /* Keyframes for Animations */
+  @keyframes fade-in {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-down {
+    0% { transform: translateY(-100px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes pulsate {
+    0% { transform: scale(1); box-shadow: 0 0 10px #ff4500; }
+    50% { transform: scale(1.05); box-shadow: 0 0 20px #ff6347; }
+    100% { transform: scale(1); box-shadow: 0 0 10px #ff4500; }
+  }

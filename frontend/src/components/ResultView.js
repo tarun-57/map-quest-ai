@@ -6,7 +6,8 @@ import {
 //   useLoadScript,
 } from "@react-google-maps/api";
 import { useLocation } from "react-router-dom";
-// import {computeHeading} from "google.maps"
+import { useStateContext } from "../state/StateContext";
+import "../styles/ResultView.css";
 
 const mapContainerStyle = {
   width: "800px",
@@ -20,7 +21,7 @@ const options = {
   clickableIcons: false,
   keyboardShortcuts: false,
   // disableDoubleClickZoom: true,
-  draggable: false,
+  // draggable: false,
   rotateControl: true,
   mapId: '455a5b96cd32fd41',
   // heading: 0,
@@ -41,6 +42,39 @@ const calculateDistance = (coord1, coord2) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 };
+
+function calculatePoints2(distance, timeTaken) {
+  const A = 2000;  // Controls the steepness of score drop based on distance
+  const B = 0.001; // Adjusts how fast score decreases with distance
+  const maxPoints = 5000;
+  const maxTime = 120; // time in seconds
+
+  // Ensure timeTaken is within the range [0, maxTime]
+  timeTaken = Math.min(Math.max(timeTaken, 0), maxTime);
+
+  // Base points based on distance
+  let points = maxPoints - A * Math.log(B * distance + 1);
+  points = Math.max(points, 0); // Ensure points are not negative
+
+  // Apply time factor: The score drops faster the longer the user takes
+  let timeMultiplier = 1 / Math.pow((timeTaken / 60) + 1, 2);
+
+  // Calculate final points based on both distance and time
+  return Math.max(Math.round(points * timeMultiplier), 0);
+}
+
+
+function calculatePoints(distance, maxScore) {
+  const A = 2000;  // Controls the steepness of score drop
+  const B = 0.001; // Adjusts how fast score decreases with distance
+  const maxPoints = maxScore;
+
+  // Calculate points based on the formula
+  let points = maxPoints - A * Math.log(B * distance + 1);
+
+  // Ensure points are not negative
+  return Math.max(Math.round(points), 0);
+}
 
 // Function to calculate bearing (heading) between two points
 function calculateBearing(start, end) {
@@ -68,21 +102,32 @@ function calculateZoom(dist) {
 
 const ResultView = () => {
 
-  const location = useLocation();
+  // const location = useLocation();
+  const { state, updateState } = useStateContext();
 
-  const { clickedCoords, streetCoord } = location.state || {};
-  const mapCenter = {
+  // useEffect(() => {
+
+  // })
+  const { clickedCoords, streetCoord } = state?.coords || {};
+  const madeAGuess = state?.madeAGuess || undefined;
+  const mapCenter = clickedCoords ? {
     lat: (clickedCoords.lat + streetCoord.lat) / 2,
     lng: (clickedCoords.lng + streetCoord.lng) / 2,
     // lat: 0,
     // lng: 0
-  };
+  } : streetCoord;
+  console.log("hiii")
+  // console.log("location", location)
+  console.log("clickedCoords", clickedCoords)
+  console.log("streetCoord", streetCoord)
+  console.log("madeAGuess", madeAGuess)
+
 
   const mapRef = useRef();
 
-  let a = window.google.maps.geometry.spherical.computeHeading(streetCoord, clickedCoords);
+  // let a = window.google.maps.geometry.spherical.computeHeading(streetCoord, clickedCoords);
   // options.heading = a - 90;
-  let b = window.google.maps.geometry.spherical.computeDistanceBetween(clickedCoords, streetCoord);
+  // let b = window.google.maps.geometry.spherical.computeDistanceBetween(clickedCoords, streetCoord);
   // let c = window.google.maps.MVCObject.setHeading(150);
   // console.log("a-32orfk")
   // console.log(a)
@@ -96,9 +141,14 @@ const ResultView = () => {
 
   const distance = clickedCoords
     ? calculateDistance(streetCoord, clickedCoords)
-    : null;
+    : undefined;
 
-  const zoom = calculateZoom(distance);
+  const score = calculatePoints(distance, state.maxScore);
+
+  const zoom = madeAGuess ? calculateZoom(distance) : 7;
+
+  console.log("distance",distance)
+  console.log("score",score)
 
   // useEffect(() => {
   //   if (mapRef.current && clickedCoords && streetCoord) {
@@ -108,63 +158,84 @@ const ResultView = () => {
   // }, [clickedCoords, streetCoord]);
 
   return (
-    <div>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        zoom={zoom}
-        center={mapCenter} // Center the map around streetCoord
-        options={options}
-        // mapId: {'new-map-id'}
-        // heading: {180}
-        // onLoad={(map) => (mapRef.current = map)}
-      >
-        {streetCoord &&
-          (<MarkerF
-            position={streetCoord}
-            icon={{
-              url: require("../static/icons/flag.png"),
-              scaledSize: { width: 32, height: 32 },
-            }}
-            />)
-        }
-        {clickedCoords && (<>
-          <MarkerF
-            position={clickedCoords}
-          />
-        </>)}
+    <div className="result-view">
+      <div className="map-wrapper">
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          zoom={zoom}
+          center={mapCenter} // Center the map around streetCoord
+          options={options}
+          // mapId: {'new-map-id'}
+          // heading: {180}
+          // onLoad={(map) => (mapRef.current = map)}
+        >
+          {streetCoord &&
+            (<MarkerF
+              position={streetCoord}
+              icon={{
+                url: require("../static/icons/flag.png"),
+                scaledSize: { width: 32, height: 32 },
+              }}
+              />)
+          }
+          {clickedCoords && (<>
+            <MarkerF
+              position={clickedCoords}
+            />
+          </>)}
 
-        {/* Polyline (dotted line) between streetCoord and the clicked coordinates */}
-        {clickedCoords && streetCoord && (<PolylineF
-          path={[streetCoord, clickedCoords]} // Define the path between the two points
-          options={{
-            strokeColor: "#000", // Line color
-            strokeOpacity: 0.2,
-            strokeWeight: 0,
-            // geodesic: true,
-            icons: [
-              {
-                icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 4 },
-                offset: "0",
-                repeat: "20px", // Dotted pattern
-              },
-            ],
-          }}
-        />)}
-      </GoogleMap>
+          {/* Polyline (dotted line) between streetCoord and the clicked coordinates */}
+          {clickedCoords && streetCoord && (<PolylineF
+            path={[streetCoord, clickedCoords]} // Define the path between the two points
+            options={{
+              strokeColor: "#000", // Line color
+              // strokeOpacity: 0.2,
+              strokeWeight: 0,
+              // geodesic: true,
+              icons: [
+                {
+                  icon: { path: "M 0,-1 0,1", strokeOpacity: 0.8, scale: 2 },
+                  offset: "0",
+                  repeat: "10px", // Dotted pattern
+                },
+              ],
+            }}
+          />)}
+        </GoogleMap>
+      </div>
 
       {/* Show the distance between streetCoord and the clicked point */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 10,
-          left: 10,
-          background: "white",
-          padding: "10px",
-        }}
-      >
-        <h3>Distance between points:</h3>
-        <p>{distance.toFixed(2)} km</p>
+      {clickedCoords ?
+        (<div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: 10,
+            background: "blue",
+            padding: "10px",
+          }}
+        >
+          <h3>Distance between points:</h3>
+          <p>{distance.toFixed(2)} km</p>
+          <h3>Score:</h3>
+          <p>{score} points</p>
+        </div>) : (
+          <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: 10,
+            background: "blue",
+            padding: "10px",
+          }}
+        >
+
+        <p>You never made a guess :/</p>
+        <h3>Score:</h3>
+        <p>0 points</p>
       </div>
+        )
+      }
     </div>
   );
 };

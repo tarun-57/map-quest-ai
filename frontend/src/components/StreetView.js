@@ -7,8 +7,10 @@ import {
 import MapView from "./MapView";
 import "../styles/StreetView.css";
 import ResultView from "./ResultView";
+import TimerComponent from "./TimerComponent";
 import geoList from "../static/data/coordinates.js"
 import { Navigate, useNavigate } from "react-router-dom";
+import { useStateContext } from "../state/StateContext";
 
 const containerStyle = {
   width: "100vw",
@@ -23,9 +25,10 @@ const streetCoord = geoList[Math.floor(Math.random() * 60569)];
 // };
 
 const StreetView = () => {
+  const { state, updateState } = useStateContext();
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.GCP_API_KEY, // Replace with your API key
+    googleMapsApiKey: process.env.REACT_APP_GCP_API_KEY, // Replace with your API key
   });
 
   const navigate = useNavigate();
@@ -36,6 +39,19 @@ const StreetView = () => {
   const [isGuessed, setIsGuessed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
+  const handleTimeUp = () => {
+    console.log('Time is up!');
+    // You can trigger the end of the game or other logic here
+    const coords = {
+      clickedCoords: null,
+      streetCoord: streetCoord
+    };
+    const madeAGuess = false;
+    setTimeout(() => {
+      navigate('/result', { state: { coords: coords, madeAGuess: false } });
+    }, 0);
+  };
+
   const handleGuess = () => {
     console.log("guess is clicked");
     if(isMapClicked) {
@@ -44,11 +60,20 @@ const StreetView = () => {
         clickedCoords: clickedCoords,
         streetCoord: streetCoord
       };
-      navigate('/result', { state: coords});
+      updateState("coords", coords)
+      updateState("madeAGuess", true)
+      console.log(coords)
+      navigate('/result');
     }
   };
 
   useEffect(() => {
+    console.log("state in streetview:")
+    console.log(state)
+    updateState("coords", {
+      clickedCoords: null,
+      streetCoord: streetCoord
+    })
     if (isLoaded && mapRef.current) {
       const sv = new window.google.maps.StreetViewPanorama(mapRef.current, {
         position: streetCoord,
@@ -69,6 +94,7 @@ const StreetView = () => {
     // !isGuessed ? (
       <div>
         <div ref={mapRef} style={containerStyle}></div>
+        <div className="timer-container"><TimerComponent round={1} onTimeUp={handleTimeUp} /></div>
         <div
           className="map-view-container"
           onMouseEnter={() => setIsHovered(true)}
