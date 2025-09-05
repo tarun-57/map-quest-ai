@@ -6,6 +6,7 @@ import GameView from './GameView';
 import MapView from './MapView';
 import ProtectedRoute from "./ProtectedRoute";
 import ResultView from "./ResultView";
+import SummaryView from "./SummaryView";
 
 const App = () => {
   const [name, setName] = useState('');
@@ -21,17 +22,25 @@ const App = () => {
     {
       path: "/play",
       element: (
-        // <ProtectedRoute>
+        <ProtectedRoute>
           <StreetView />
-        // </ProtectedRoute>
+        </ProtectedRoute>
       ),
     },
     {
       path: "/result",
       element: (
-        // <ProtectedRoute>
+        <ProtectedRoute>
           <ResultView />
-        // </ProtectedRoute>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/summary",
+      element: (
+        <ProtectedRoute>
+          <SummaryView />
+        </ProtectedRoute>
       ),
     },
     // {

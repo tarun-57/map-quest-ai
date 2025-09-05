@@ -80,6 +80,10 @@ const App = () => {
       <div className="stars"></div>
       {/* <div className="twinkling"></div> */}
       <div className="nebula"></div>
+      <div className="orbs">
+        <div className="orb orb-1"></div>
+        <div className="orb orb-2"></div>
+      </div>
       {/* <div className="shooting-star"></div> */}
       {/* <div className="shooting-star"></div>
       <div className="shooting-star"></div> */}

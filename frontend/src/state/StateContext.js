@@ -20,6 +20,8 @@ export const StateProvider = ({ children }) => {
     },
     madeAGuess: false,
     resultData: {},
+    totalScore: 0,
+    rounds: [],
   });
 
   const updateState = (key, value) => {

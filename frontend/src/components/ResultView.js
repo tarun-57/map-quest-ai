@@ -5,7 +5,7 @@ import {
   PolylineF,
 //   useLoadScript,
 } from "@react-google-maps/api";
-import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useStateContext } from "../state/StateContext";
 import "../styles/ResultView.css";
 
@@ -102,8 +102,8 @@ function calculateZoom(dist) {
 
 const ResultView = () => {
 
-  // const location = useLocation();
   const { state, updateState } = useStateContext();
+  const navigate = useNavigate();
 
   // useEffect(() => {
 
@@ -143,7 +143,7 @@ const ResultView = () => {
     ? calculateDistance(streetCoord, clickedCoords)
     : undefined;
 
-  const score = calculatePoints(distance, state.maxScore);
+  const score = distance !== undefined ? calculatePoints(distance, state.maxScore) : 0;
 
   const zoom = madeAGuess ? calculateZoom(distance) : 7;
 
@@ -157,8 +157,40 @@ const ResultView = () => {
   //   }
   // }, [clickedCoords, streetCoord]);
 
+  const advanceToNextRound = () => {
+    const roundEntry = {
+      round: state.currentRound + 1,
+      clickedCoords: clickedCoords || null,
+      streetCoord,
+      distanceKm: distance || null,
+      score,
+    };
+
+    const nextRounds = [...(state.rounds || []), roundEntry];
+    const nextTotalScore = (state.totalScore || 0) + score;
+    const nextRoundIndex = state.currentRound + 1;
+
+    updateState("rounds", nextRounds);
+    updateState("totalScore", nextTotalScore);
+
+    if (nextRoundIndex >= state.totalRounds) {
+      updateState("currentRound", nextRoundIndex);
+      navigate('/summary');
+    } else {
+      updateState("currentRound", nextRoundIndex);
+      updateState("maxScore", 5000);
+      updateState("hintsUnlocked", 0);
+      updateState("hints", { hint1: "", hint2: "", hint3: "" });
+      navigate('/play');
+    }
+  };
+
   return (
     <div className="result-view">
+      <div className="result-header">
+        <div className="pill">Round {state.currentRound + 1} / {state.totalRounds}</div>
+        <div className="pill">Player: {state.userName}</div>
+      </div>
       <div className="map-wrapper">
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
@@ -204,38 +236,19 @@ const ResultView = () => {
         </GoogleMap>
       </div>
 
-      {/* Show the distance between streetCoord and the clicked point */}
-      {clickedCoords ?
-        (<div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            left: 10,
-            background: "blue",
-            padding: "10px",
-          }}
-        >
-          <h3>Distance between points:</h3>
-          <p>{distance.toFixed(2)} km</p>
-          <h3>Score:</h3>
-          <p>{score} points</p>
-        </div>) : (
-          <div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            left: 10,
-            background: "blue",
-            padding: "10px",
-          }}
-        >
-
-        <p>You never made a guess :/</p>
-        <h3>Score:</h3>
-        <p>0 points</p>
+      <div className="result-stats">
+        <div className="stat">
+          <div className="label">Distance</div>
+          <div className="value">{clickedCoords ? `${distance.toFixed(2)} km` : '—'}</div>
+        </div>
+        <div className="stat">
+          <div className="label">Round Score</div>
+          <div className="value">{score} pts</div>
+        </div>
+        <div className="stat">
+          <button className="next-btn" onClick={advanceToNextRound}>Next</button>
+        </div>
       </div>
-        )
-      }
     </div>
   );
 };

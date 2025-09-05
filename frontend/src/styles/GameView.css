@@ -166,31 +166,32 @@ body {
   }
 
   .content {
-    /* display: none; */
-    background: rgba(0, 0, 0, 0.7);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    width: 90%;
-    max-width: 500px;
+    background: rgba(2, 6, 23, 0.7);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    width: 92%;
+    max-width: 540px;
     animation: slide-down 1.2s ease-out;
     z-index: 2;
   }
 
   /* Title and Subtitle */
   .title {
-    font-size: 2.5rem;
+    font-size: 2.6rem;
     margin-bottom: 10px;
-    color: #ffdf00;
+    color: #f8fafc;
+    text-shadow: 0 6px 24px rgba(0,0,0,0.35);
     /* color: rgb(236, 236, 0); */
     /* text-shadow: 0 0 10px #ffdf00; */
     animation: fade-in 1.5s ease-in;
   }
 
   .subtitle {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     margin-bottom: 20px;
-    color: #aadfff;
+    color: #cbd5e1;
     /* text-shadow: 0 0 5px #aadfff; */
     animation: fade-in 2s ease-in;
   }
@@ -236,18 +237,18 @@ body {
     padding: 10px;
     font-size: 1rem;
     border: none;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.6);
+    color: #e5e7eb;
+    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.15) inset;
     transition: transform 0.3s, box-shadow 0.3s;
     box-sizing: border-box;
   }
 
   input:hover, select:hover {
-    /* transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); */
     outline: none;
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35) inset, 0 10px 24px rgba(99, 102, 241, 0.15);
     }
 
     input:focus, select:focus {
@@ -256,22 +257,21 @@ body {
 
   /* Play Button with Animation */
   .play-button {
-    background-color: #ff4500;
+    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
     color: white;
-    font-size: 1.2rem;
-    padding: 10px 20px;
+    font-size: 1.1rem;
+    padding: 12px 20px;
     border: none;
-    border-radius: 50px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-    animation: pulsate 1.5s infinite ease-in-out;
-    box-shadow: 0 0 10px #ff4500;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    animation: pulsate 1.8s infinite ease-in-out;
+    box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35);
   }
 
   .play-button:hover {
-    transform: scale(1.1);
-    background-color: #ff6347;
-    box-shadow: 0 0 20px #ff6347;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(22, 163, 74, 0.45);
   }
 
   /* Keyframes for Animations */
@@ -286,7 +286,15 @@ body {
   }
 
   @keyframes pulsate {
-    0% { transform: scale(1); box-shadow: 0 0 10px #ff4500; }
-    50% { transform: scale(1.05); box-shadow: 0 0 20px #ff6347; }
-    100% { transform: scale(1); box-shadow: 0 0 10px #ff4500; }
+    0% { transform: scale(1); box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35); }
+    50% { transform: scale(1.03); box-shadow: 0 12px 28px rgba(22, 163, 74, 0.45); }
+    100% { transform: scale(1); box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35); }
   }
+
+  /* Animated orbs */
+  .orbs { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .orb { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.5; }
+  .orb-1 { width: 360px; height: 360px; left: 10%; top: 25%; background: #22c55e; animation: float1 12s ease-in-out infinite; }
+  .orb-2 { width: 280px; height: 280px; right: 12%; bottom: 15%; background: #60a5fa; animation: float2 10s ease-in-out infinite; }
+  @keyframes float1 { 0%,100% { transform: translateY(0) translateX(0); } 50% { transform: translateY(-20px) translateX(10px); } }
+  @keyframes float2 { 0%,100% { transform: translateY(0) translateX(0); } 50% { transform: translateY(15px) translateX(-10px); } }

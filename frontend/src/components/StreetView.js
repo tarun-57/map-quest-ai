@@ -17,7 +17,7 @@ const containerStyle = {
   height: "100vh",
 };
 
-const streetCoord = geoList[Math.floor(Math.random() * 60569)];
+const randomStreetCoord = () => geoList[Math.floor(Math.random() * 60569)];
 
 // {
 //   lat: 62.66038132,
@@ -38,17 +38,18 @@ const StreetView = () => {
   const [clickedCoords, setClickedCoords] = useState({});
   const [isGuessed, setIsGuessed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [streetCoord, setStreetCoord] = useState(randomStreetCoord());
 
   const handleTimeUp = () => {
     console.log('Time is up!');
-    // You can trigger the end of the game or other logic here
     const coords = {
       clickedCoords: null,
       streetCoord: streetCoord
     };
-    const madeAGuess = false;
+    updateState("coords", coords);
+    updateState("madeAGuess", false);
     setTimeout(() => {
-      navigate('/result', { state: { coords: coords, madeAGuess: false } });
+      navigate('/result');
     }, 0);
   };
 
@@ -88,7 +89,7 @@ const StreetView = () => {
       });
       setStreetView(sv);
     }
-  }, [isLoaded]);
+  }, [isLoaded, streetCoord]);
 
   return isLoaded ? (
     // !isGuessed ? (
