@@ -1,17 +1,15 @@
 // ProtectedRoute.js
-import React, { useContext } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { UserContext } from './UserContext';
+import { useStateContext } from "../state/StateContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { username } = useContext(UserContext);
+  const { state } = useStateContext();
 
-  if (!username) {
-    // If no username, redirect to Home
+  if (!state?.userName || String(state.userName).trim().length === 0) {
     return <Navigate to="/" replace />;
   }
 
-  // If username is present, render the children (protected route)
   return children;
 };
 

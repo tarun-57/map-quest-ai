@@ -1,8 +1,8 @@
-const BASE_URL = 'http://localhost:3300';
+import { apiUrl } from './config';
 
 export const fetchHints = async (input) => {
     try {
-      const response = await fetch(`${BASE_URL}/api/generate`, {
+      const response = await fetch(apiUrl('/api/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -15,9 +15,15 @@ export const fetchHints = async (input) => {
       }
 
       const responseData = await response.json();
-      const hintsArray = responseData.output.split('\n')
-                        .map(hint => hint.replace(/^Hint \d+: /, '').trim());
-      return hintsArray;
+      const output = typeof responseData.output === 'string' ? responseData.output : '';
+      const lines = output.split('\n').map(l => l.trim()).filter(Boolean);
+      const cleaned = lines.map(l => l.replace(/^Hint\s*\d+\s*:\s*/i, '').trim()).filter(Boolean);
+      // Fallback: try to split by 'Hint X:' inline
+      if (cleaned.length === 0 && output.includes('Hint')) {
+        const parts = output.split(/Hint\s*\d+\s*:\s*/i).map(s => s.trim()).filter(Boolean);
+        if (parts.length > 0) return parts.slice(0, 3);
+      }
+      return cleaned.slice(0, 3);
     } catch (error) {
       console.error('Error fetching hints', error);
       throw error;

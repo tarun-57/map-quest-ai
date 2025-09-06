@@ -7,7 +7,7 @@ import '../styles/Timer.css';
 function TimerComponent({ round, onTimeUp }) {
 
   const { state, updateState } = useStateContext();
-  const [timeLeft, setTimeLeft] = useState(120); // Timer starts from 120 seconds (2 minutes)
+  const [timeLeft, setTimeLeft] = useState(120);
   // const [maxScore, setMaxScore] = useState(5000);
   const [blink, setBlink] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -18,22 +18,20 @@ function TimerComponent({ round, onTimeUp }) {
   const [error, setError] = useState(null);
 
   //uncomment once done
-  // useEffect(() => {
-  //   // Create an interval that updates the timer every second
-  //   const timerInterval = setInterval(() => {
-  //     setTimeLeft((prevTime) => {
-  //       if (prevTime <= 0) {
-  //         clearInterval(timerInterval); // Clear the interval when time is up
-  //         onTimeUp(); // Optional callback to notify when the timer hits 0
-  //         return 0;
-  //       }
-  //       if(prevTime < 22) setBlink(prevTime % 2);
-  //       return prevTime - 1;
-  //     });
-  //   }, 1000);
-  //   // Clean up the interval when the component unmounts
-  //   return () => clearInterval(timerInterval);
-  // }, [onTimeUp]);
+  useEffect(() => {
+    const timerInterval = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 0) {
+          clearInterval(timerInterval);
+          onTimeUp();
+          return 0;
+        }
+        if (prevTime < 22) setBlink(prevTime % 2);
+        return prevTime - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerInterval);
+  }, [onTimeUp]);
 
   // Format the time as MM:SS
   const formatTime = (seconds) => {
@@ -43,22 +41,20 @@ function TimerComponent({ round, onTimeUp }) {
   };
 
   const handleYesClick = async () => {
-    console.log("fetching hints")
-    // setShowModal(true);
     setLoading(true);
-    setError(null); // Reset error state before the fetch
+    setError(null);
     try {
       const streetCoord = state?.coords?.streetCoord;
       const result = await fetchHints(streetCoord);
-      console.log("hints:");
-      console.log(result);
-      setHints(result); // Update state with fetched hints
-
+      if (!Array.isArray(result) || result.length < 1) {
+        throw new Error('Invalid hints format');
+      }
+      setHints(result.filter(Boolean));
     } catch (err) {
-      setError('Failed to fetch hints'); // Handle errors
+      setError('Failed to fetch hints. Please try again.');
       console.error(err);
     } finally {
-      setLoading(false); // Stop loading spinner
+      setLoading(false);
     }
   };
 

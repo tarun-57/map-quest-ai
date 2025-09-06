@@ -1,5 +1,109 @@
 .result-view {
-    background: ivory;
+    position: relative;
     width: 100vw;
     height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%);
+    color: #e5e7eb;
+    overflow: hidden;
+}
+
+.result-header {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    z-index: 2;
+}
+
+.result-header .pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    color: #c7d2fe;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+}
+
+.map-wrapper {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 96px 24px 160px;
+    box-sizing: border-box;
+}
+
+.map-wrapper > div:first-child {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.result-stats {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 20px;
+    align-items: center;
+    padding: 16px 20px;
+    border-radius: 16px;
+    background: rgba(2, 6, 23, 0.65);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    z-index: 3;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 160px;
+}
+
+.stat .label {
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+}
+
+.stat .value {
+    margin-top: 6px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.next-btn {
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35);
+}
+
+.next-btn:hover { transform: translateY(-1px); }
+.next-btn:active { transform: translateY(0); opacity: 0.9; }
+
+.hint.error {
+    color: #fecaca;
 }

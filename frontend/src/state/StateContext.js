@@ -20,6 +20,9 @@ export const StateProvider = ({ children }) => {
     },
     madeAGuess: false,
     resultData: {},
+    totalScore: 0,
+    rounds: [],
+    region: { scope: 'world', value: '' },
   });
 
   const updateState = (key, value) => {
