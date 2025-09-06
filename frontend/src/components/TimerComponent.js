@@ -7,7 +7,7 @@ import '../styles/Timer.css';
 function TimerComponent({ round, onTimeUp }) {
 
   const { state, updateState } = useStateContext();
-  const [timeLeft, setTimeLeft] = useState(120); // Timer starts from 120 seconds (2 minutes)
+  const [timeLeft, setTimeLeft] = useState(120);
   // const [maxScore, setMaxScore] = useState(5000);
   const [blink, setBlink] = useState(false);
   const [showModal, setShowModal] = useState(false);

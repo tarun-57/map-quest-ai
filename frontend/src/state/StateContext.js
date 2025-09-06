@@ -22,6 +22,7 @@ export const StateProvider = ({ children }) => {
     resultData: {},
     totalScore: 0,
     rounds: [],
+    region: { scope: 'world', value: '' },
   });
 
   const updateState = (key, value) => {

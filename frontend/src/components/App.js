@@ -1,6 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import React, { useState } from 'react';
-import io from 'socket.io-client';
 import StreetView from './StreetView';
 import GameView from './GameView';
 import MapView from './MapView';

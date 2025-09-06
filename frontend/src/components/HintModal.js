@@ -3,13 +3,10 @@ import { useStateContext } from "../state/StateContext";
 import { fetchHints } from '../api';
 import "../styles/HintModal.css";
 
+// Displays an unlockable hints modal, fetching hints from the backend once and revealing them progressively.
 function HintModal(
     { content, onClose, onYes, onNo }
 ) {
-    // console.log("content")
-    // console.log(content)
-    // content = (content && content.length > 0) ? content : "Use 500 points to ask our AI for a hint?";
-    // console.log(content)
     const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -17,7 +14,6 @@ function HintModal(
     const [hintsUnlocked, setHintsUnlocked] = useState(0);
     const [hints, setHints] = useState([]);
     useEffect(() => {
-        console.log("in useeff")
         if(state?.hintsUnlocked){
             setHintsUnlocked(state?.hintsUnlocked);}
         if(state?.hints?.hint1) setHints([state?.hints?.hint1, state?.hints?.hint2, state?.hints?.hint3]);

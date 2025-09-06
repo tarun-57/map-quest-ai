@@ -3,6 +3,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
+const pino = require('pino');
+const pinoHttp = require('pino-http');
 const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -31,7 +33,11 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(cors({ origin: CORS_ORIGIN }));
-app.use(morgan('combined'));
+const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
+app.use(pinoHttp({ logger }));
+if (process.env.REQUEST_LOGS !== 'false') {
+  app.use(morgan('combined'));
+}
 
 // Basic rate limiting for the generation endpoint
 const generateLimiter = rateLimit({
@@ -79,22 +85,32 @@ function withTimeout(promise, ms) {
   ]);
 }
 
-// Health and readiness endpoints
+/** Health endpoint */
 app.get('/healthz', (_req, res) => {
   res.status(200).json({ status: 'ok' });
 });
+/** Readiness endpoint */
 app.get('/readyz', (_req, res) => {
   const ready = Boolean(GEMINI_API_KEY);
   res.status(ready ? 200 : 500).json({ ready });
 });
 
-// Business logic: generate hints for given coordinates
+/**
+ * Generate three progressively simpler hints for given coordinates using Gemini.
+ * @param {string} prompt - Prepared prompt text.
+ * @returns {Promise<string>} Model output as plain text.
+ */
 async function handleAPI(prompt) {
   const model = getModel();
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
 
+/**
+ * POST /api/generate
+ * Input: { input: { lat, lng } }
+ * Output: { output: string, cached: boolean, durationMs?: number }
+ */
 app.post('/api/generate', generateLimiter, async (req, res) => {
   const { input } = req.body || {};
 
@@ -126,15 +142,121 @@ Each hint must:
     const output = await withTimeout(handleAPI(prompt), REQUEST_TIMEOUT_MS);
     setCache(cacheKey, output, CACHE_TTL_MS);
     const durationMs = Date.now() - startedAt;
-    // eslint-disable-next-line no-console
     console.log(`generated in ${durationMs}ms for ${cacheKey}`);
     res.json({ output, cached: false, durationMs });
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('generation_error', { message: error.message });
     const status = error.message.includes('timed out') ? 504 : 500;
     res.status(status).json({ error: status === 504 ? 'Upstream model timed out' : 'Generation failed' });
   }
+});
+
+// ---------------- Random Street View Location API ----------------
+// Simple region bounding boxes
+const REGION_BOUNDS = {
+  world: { minLat: -85, maxLat: 85, minLng: -180, maxLng: 180 },
+  continents: {
+    Africa: { minLat: -35, maxLat: 38, minLng: -20, maxLng: 52 },
+    Asia: { minLat: -10, maxLat: 55, minLng: 25, maxLng: 150 },
+    Europe: { minLat: 35, maxLat: 71, minLng: -25, maxLng: 45 },
+    NorthAmerica: { minLat: 7, maxLat: 83, minLng: -170, maxLng: -50 },
+    SouthAmerica: { minLat: -56, maxLat: 13, minLng: -82, maxLng: -34 },
+    Oceania: { minLat: -50, maxLat: 0, minLng: 110, maxLng: 180 }
+  },
+  countries: {
+    India: { minLat: 8, maxLat: 37, minLng: 68, maxLng: 97 },
+    USA: { minLat: 24, maxLat: 49, minLng: -125, maxLng: -66 },
+    UK: { minLat: 49.5, maxLat: 59.5, minLng: -8.5, maxLng: 1.8 }
+  }
+};
+
+function randomInRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function sampleCoordFromBounds(bounds) {
+  return {
+    lat: randomInRange(bounds.minLat, bounds.maxLat),
+    lng: randomInRange(bounds.minLng, bounds.maxLng)
+  };
+}
+
+async function fetchJsonWithTimeout(url, timeoutMs) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const resp = await fetch(url, { signal: controller.signal });
+    const data = await resp.json();
+    return data;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+async function hasStreetView(lat, lng, apiKey) {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${lat},${lng}&source=default&key=${apiKey}`;
+    const data = await fetchJsonWithTimeout(url, 5000);
+    if (data && data.status === 'OK') {
+      return { ok: true, pano_id: data.pano_id };
+    }
+    return { ok: false };
+  } catch (e) {
+    return { ok: false };
+  }
+}
+
+function resolveBounds(scope, value) {
+  if (scope === 'world') return REGION_BOUNDS.world;
+  if (scope === 'continent') {
+    // Normalize a few common names
+    const key = {
+      africa: 'Africa', asia: 'Asia', europe: 'Europe',
+      northamerica: 'NorthAmerica', southamerica: 'SouthAmerica', oceania: 'Oceania'
+    }[(value || '').replace(/\s+/g, '').toLowerCase()];
+    return REGION_BOUNDS.continents[key] || REGION_BOUNDS.world;
+  }
+  if (scope === 'country') {
+    const key = (value || '').toLowerCase();
+    const map = { india: 'India', usa: 'USA', unitedstates: 'USA', uk: 'UK', unitedkingdom: 'UK' };
+    const resolved = map[key];
+    return REGION_BOUNDS.countries[resolved] || REGION_BOUNDS.world;
+  }
+  return REGION_BOUNDS.world;
+}
+
+// Serve from precomputed pools in data/regions/*.json
+const fs = require('fs');
+const path = require('path');
+const POOLS_DIR = path.join(process.cwd(), 'data', 'regions');
+
+function poolFile(scope, value) {
+  if (scope === 'world') return path.join(POOLS_DIR, 'world.json');
+  if (scope === 'continent') return path.join(POOLS_DIR, `continent-${value}.json`);
+  if (scope === 'country') return path.join(POOLS_DIR, `country-${value}.json`);
+  return path.join(POOLS_DIR, `${scope}-${value || 'default'}.json`);
+}
+
+function loadPool(scope, value) {
+  try {
+    const file = poolFile(scope, value);
+    if (!fs.existsSync(file)) return [];
+    const text = fs.readFileSync(file, 'utf8');
+    const arr = JSON.parse(text);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+app.post('/api/random-location', async (req, res) => {
+  const { scope = 'world', value } = req.body || {};
+  const pool = loadPool(scope, value);
+  if (pool.length === 0) {
+    return res.status(503).json({ error: 'No precomputed locations available for this region. Please run the pool builder.' });
+  }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  return res.json({ lat: pick.lat, lng: pick.lng, panoId: pick.panoId || null });
 });
 
 const server = app.listen(PORT, () => {

@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: .
+    container_name: mapquest-backend
+    ports:
+      - "3300:3300"
+    environment:
+      - NODE_ENV=production
+      - PORT=3300
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: mapquest-frontend
+    ports:
+      - "8080:80"
+    environment:
+      - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+

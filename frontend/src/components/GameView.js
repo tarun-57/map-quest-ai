@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import io from 'socket.io-client';
 import "../styles/GameView.css";
 import { useNavigate } from 'react-router-dom';
 import { useStateContext } from "../state/StateContext";
@@ -9,6 +8,9 @@ const App = () => {
   const [userName, setUserName] = useState('');
   const [rounds, setRounds] = useState(1);
   const [error, setError] = useState("");
+  const [scope, setScope] = useState('world');
+  const [continent, setContinent] = useState('Asia');
+  const [country, setCountry] = useState('India');
   const [roomID, setRoomID] = useState('');
   const [socket, setSocket] = useState(null);
 
@@ -27,6 +29,13 @@ const App = () => {
     setError(""); // Clear any previous errors
     updateState("userName", userName);
     updateState("totalRounds", rounds);
+    if (scope === 'world') {
+      updateState('region', { scope: 'world', value: '' });
+    } else if (scope === 'continent') {
+      updateState('region', { scope: 'continent', value: continent });
+    } else if (scope === 'country') {
+      updateState('region', { scope: 'country', value: country });
+    }
     console.log("sattet-------------")
     console.log(state)
     navigate("/play");
@@ -115,6 +124,38 @@ const App = () => {
             <option value={5}>5</option>
           </select>
         </div>
+        <div className="form-group fade-in">
+          <label>Where do you want to play?</label>
+          <select value={scope} onChange={(e) => setScope(e.target.value)}>
+            <option value="world">Whole world</option>
+            <option value="continent">A continent</option>
+            <option value="country">A country</option>
+          </select>
+        </div>
+        {scope === 'continent' && (
+          <div className="form-group fade-in">
+            <label>Choose a continent</label>
+            <select value={continent} onChange={(e) => setContinent(e.target.value)}>
+              <option value="Africa">Africa</option>
+              <option value="Asia">Asia</option>
+              <option value="Europe">Europe</option>
+              <option value="NorthAmerica">North America</option>
+              <option value="SouthAmerica">South America</option>
+              <option value="Oceania">Oceania</option>
+            </select>
+          </div>
+        )}
+        {scope === 'country' && (
+          <div className="form-group fade-in">
+            <label>Choose a country</label>
+            <select value={country} onChange={(e) => setCountry(e.target.value)}>
+              <option value="India">India</option>
+              <option value="USA">USA</option>
+              <option value="UK">UK</option>
+            </select>
+            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>More countries coming soon.</div>
+          </div>
+        )}
         <button className="play-button pulsate" onClick={handlePlay}>
           EXPLORE!
         </button>

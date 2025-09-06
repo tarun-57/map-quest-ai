@@ -1,8 +1,8 @@
-const BASE_URL = 'http://localhost:3300';
+import { apiUrl } from './config';
 
 export const fetchHints = async (input) => {
     try {
-      const response = await fetch(`${BASE_URL}/api/generate`, {
+      const response = await fetch(apiUrl('/api/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
