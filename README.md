@@ -1,94 +1,69 @@
 # MapQuest AI
 
-Guess the location from Google Street View and get AI-powered hints. Choose to play across the world, a continent, or a country (India, USA, UK). Built with React + Google Maps on the frontend and Node/Express on the backend.
+Guess the location from Google Street View and get AI-powered hints. Choose to play across the world, a continent, or a country (India, USA, UK). Monorepo layout with `client/` (React) and `server/` (Node/Express).
 
-## Features
-- Single-player GeoGuessr-like gameplay using Google Street View
-- Region selection: world, continent, or specific country (India, USA, UK)
-- AI hints (Gemini) with progressive unlocks and score deduction
-- Multi-round scoring and end-of-game summary
-- Precomputed Street View location pools for fast loads
-- Production-ready Docker setup with Nginx frontend proxying /api to backend
+## Structure
+- `client/`: React app (Create React App), served by nginx in production
+- `server/`: Express API with Gemini hints and precomputed Street View pools
 
 ## Requirements
-- Google API keys:
-  - GOOGLE_MAPS_API_KEY (Street View Metadata, Geocoding)
-  - REACT_APP_GCP_API_KEY (Maps/Street View on frontend)
-- Gemini API key: GEMINI_API_KEY
+- Google APIs: GOOGLE_MAPS_API_KEY (Street View Metadata, Geocoding)
+- Frontend Maps: REACT_APP_GCP_API_KEY
+- Gemini: GEMINI_API_KEY
 
 ## Quick start (Docker Compose)
-1. Create a `.env` in project root with:
+1) Create `.env` (repo root):
 ```
 GEMINI_API_KEY=your_gemini_key
 GOOGLE_MAPS_API_KEY=your_google_key
-# Optional if frontend should call a different host; with compose we proxy /api via nginx
 REACT_APP_API_BASE_URL=
 CORS_ORIGIN=*
 ```
-2. Build region pools (pick minimal to start, e.g. the 3 countries):
+2) Build region pools (choose minimal set to start):
 ```
-GOOGLE_MAPS_API_KEY=your_google_key \
+cd server
+GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY \
 INCLUDE=country:India,country:USA,country:UK \
 TARGET_PER_REGION=300 ATTEMPT_MULTIPLIER=8 \
 node scripts/build-region-pool.js
 ```
-3. Start
+3) Run:
 ```
-docker compose up --build
+docker compose -f server/docker-compose.yml up --build
 ```
 - Frontend: http://localhost:8080
-- Backend: http://localhost:3300 (proxied through frontend at /api)
+- Backend: http://localhost:3300 (proxied via frontend at /api)
 
 ## Local development
-Backend:
+Server:
 ```
+cd server
 npm install
 npm run dev
 ```
-Frontend:
+Client:
 ```
-cd frontend
+cd client
 npm install
 npm start
 ```
-Set `REACT_APP_API_BASE_URL` in a `.env` file in `frontend/` if backend runs on a different origin (otherwise CRA will call same-origin and you can proxy in dev).
+For separate origins in dev, set `client/.env` with `REACT_APP_API_BASE_URL=http://localhost:3300`.
 
-## Building pools (script)
-Script: `scripts/build-region-pool.js`
+## Build pools script
+`server/scripts/build-region-pool.js` supports:
+- INCLUDE (e.g., `country:India,country:USA`), DRY_RUN=true, TARGET_PER_REGION, ATTEMPT_MULTIPLIER, METADATA_RADIUS_M
+- LOG_LEVEL=error|warn|info|debug, LOG_JSON=true
 
-Environment variables:
-- `GOOGLE_MAPS_API_KEY` (required)
-- `TARGET_PER_REGION` (default 500)
-- `METADATA_RADIUS_M` (default 3000)
-- `ATTEMPT_MULTIPLIER` (default 12)
-- `INCLUDE` (filters to specific regions, e.g., `country:India,continent:Asia,world`)
-- `DRY_RUN` (true/false) to estimate work without API calls
-- `LOG_LEVEL` (error|warn|info|debug) and `LOG_JSON` (true/false)
-
-Examples:
-```
-# Dry run estimate for India
-GOOGLE_MAPS_API_KEY=... INCLUDE=country:India DRY_RUN=true node scripts/build-region-pool.js
-
-# Build three countries with logs
-GOOGLE_MAPS_API_KEY=... INCLUDE=country:India,country:USA,country:UK LOG_LEVEL=info node scripts/build-region-pool.js
-```
-
-Outputs are written to `data/regions/*.json` and used by `/api/random-location`.
+Outputs JSON files to `server/data/regions/*.json`, consumed by `/api/random-location`.
 
 ## API
-- `POST /api/random-location` body `{ scope: 'world'|'continent'|'country', value?: string }` → `{ lat, lng, panoId? }`
-- `POST /api/generate` body `{ input: { lat, lng } }` → `{ output }` (3 formatted hints)
-- `GET /healthz` and `GET /readyz`
+- `POST /api/random-location` { scope, value? } → { lat, lng, panoId? }
+- `POST /api/generate` { input: { lat, lng } } → { output }
+- Health: `/healthz` and `/readyz`
 
 ## Deployment notes
-- Frontend container (nginx) proxies `/api/*` to backend container; set custom domains with `CORS_ORIGIN` if serving backend separately
-- Backend logs: pino JSON structured logs; optionally morgan access logs unless `REQUEST_LOGS=false`
-- Ensure `REACT_APP_API_BASE_URL` is set only if you are not reverse-proxying `/api` via the frontend
+- Frontend nginx proxies `/api/*` to backend
+- Limit CORS_ORIGIN to your frontend domain in production
+- Backend logs: pino JSON, optional morgan access logs
 
-## Security & quotas
-- Keep API keys private. Backend uses server-side Google keys for metadata/geocoding
-- Monitor Google API usage; building pools can consume quota. Use `INCLUDE` + `DRY_RUN` to control costs
 
-## License
-ISC
