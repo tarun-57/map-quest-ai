@@ -228,7 +228,7 @@ function resolveBounds(scope, value) {
 // Serve from precomputed pools in data/regions/*.json
 const fs = require('fs');
 const path = require('path');
-const POOLS_DIR = path.join(process.cwd(), 'data', 'regions');
+const POOLS_DIR = path.join(__dirname, 'data', 'regions');
 
 function poolFile(scope, value) {
   if (scope === 'world') return path.join(POOLS_DIR, 'world.json');
