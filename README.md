@@ -1,7 +1,9 @@
 # MapQuest AI
 
 Deployed URLs:
+
 Frontend - https://map-quest-ai.vercel.app
+
 Backend - https://map-quest-ai-backend.vercel.app
 
 Guess the location from Google Street View and get AI-powered hints. Choose to play across the world, a continent, or a country (India, USA, UK). Monorepo layout with `client/` (React) and `server/` (Node/Express).
