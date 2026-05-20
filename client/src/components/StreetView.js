@@ -28,7 +28,7 @@ const StreetView = () => {
   const { state, updateState } = useStateContext();
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.REACT_APP_GCP_API_KEY, // Replace with your API key
+    googleMapsApiKey: process.env.REACT_APP_GCP_API_KEY, 
   });
 
   const navigate = useNavigate();

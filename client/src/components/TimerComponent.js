@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import HintModal from './HintModal';
-import { fetchHints } from '../api';
+import { fetchHints, hintsAsArray } from '../api';
 import { useStateContext } from "../state/StateContext";
 import '../styles/Timer.css';
 
@@ -46,12 +46,12 @@ function TimerComponent({ round, onTimeUp }) {
     try {
       const streetCoord = state?.coords?.streetCoord;
       const result = await fetchHints(streetCoord);
-      if (!Array.isArray(result) || result.length < 1) {
+      if (!result?.hints?.hint1) {
         throw new Error('Invalid hints format');
       }
-      setHints(result.filter(Boolean));
+      setHints(hintsAsArray(result.hints).filter(Boolean));
     } catch (err) {
-      setError('Failed to fetch hints. Please try again.');
+      setError(err?.message || 'Failed to fetch hints. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);

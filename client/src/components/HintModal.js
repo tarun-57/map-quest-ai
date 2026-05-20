@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStateContext } from "../state/StateContext";
-import { fetchHints } from '../api';
+import { fetchHints, hintsAsArray } from '../api';
 import "../styles/HintModal.css";
 
 // Displays an unlockable hints modal, fetching hints from the backend once and revealing them progressively.
@@ -26,12 +26,11 @@ function HintModal(
         try {
           const streetCoord = state?.coords?.streetCoord;
           result = await fetchHints(streetCoord);
-          if (!Array.isArray(result) || result.length === 0) {
+          if (!result?.hints?.hint1) {
             throw new Error('Invalid hints format');
           }
-          result = result.filter(Boolean);
         } catch (err) {
-          setError('Failed to fetch hints. Please try again.');
+          setError(err?.message || 'Failed to fetch hints. Please try again.');
           console.error(err);
         } finally {
           setLoading(false);
@@ -44,14 +43,10 @@ function HintModal(
         setHintsUnlocked(hintsUnlocked + 1);
         if(hintsUnlocked === 0){
             setLoading(true);
-            const fetchedHints = await handleYesClick();
-            if (Array.isArray(fetchedHints) && fetchedHints.length > 0) {
-                updateState("hints",{
-                    hint1: fetchedHints[0] || "",
-                    hint2: fetchedHints[1] || "",
-                    hint3: fetchedHints[2] || "",
-                })
-                setHints(fetchedHints);
+            const fetched = await handleYesClick();
+            if (fetched?.hints) {
+                updateState("hints", fetched.hints);
+                setHints(hintsAsArray(fetched.hints));
             } else {
                 setError('Hints are not available right now.');
             }

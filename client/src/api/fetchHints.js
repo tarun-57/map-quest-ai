@@ -1,31 +1,60 @@
-import { apiUrl } from './config';
+import { ENDPOINTS } from './endpoints';
+import { apiPost } from './http';
 
-export const fetchHints = async (input) => {
-    try {
-      const response = await fetch(apiUrl('/api/generate'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({input: input}),
-      });
+function isValidCoordinate(coord) {
+  const { lat, lng } = coord || {};
+  const latOk =
+    typeof lat === 'number' && Number.isFinite(lat) && lat >= -90 && lat <= 90;
+  const lngOk =
+    typeof lng === 'number' &&
+    Number.isFinite(lng) &&
+    lng >= -180 &&
+    lng <= 180;
+  return latOk && lngOk;
+}
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+function normalizeHint(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
 
-      const responseData = await response.json();
-      const output = typeof responseData.output === 'string' ? responseData.output : '';
-      const lines = output.split('\n').map(l => l.trim()).filter(Boolean);
-      const cleaned = lines.map(l => l.replace(/^Hint\s*\d+\s*:\s*/i, '').trim()).filter(Boolean);
-      // Fallback: try to split by 'Hint X:' inline
-      if (cleaned.length === 0 && output.includes('Hint')) {
-        const parts = output.split(/Hint\s*\d+\s*:\s*/i).map(s => s.trim()).filter(Boolean);
-        if (parts.length > 0) return parts.slice(0, 3);
-      }
-      return cleaned.slice(0, 3);
-    } catch (error) {
-      console.error('Error fetching hints', error);
-      throw error;
-    }
+/**
+ * Parses POST /api/generate response:
+ * { output: { hint1, hint2, hint3 }, cached?: boolean, durationMs?: number }
+ */
+export function parseGenerateResponse(data) {
+  const output = data?.output;
+  if (!output || typeof output !== 'object' || Array.isArray(output)) {
+    throw new Error('Invalid hints format');
+  }
+
+  const hints = {
+    hint1: normalizeHint(output.hint1),
+    hint2: normalizeHint(output.hint2),
+    hint3: normalizeHint(output.hint3),
   };
+
+  if (!hints.hint1 && !hints.hint2 && !hints.hint3) {
+    throw new Error('Invalid hints format');
+  }
+
+  return {
+    hints,
+    cached: Boolean(data?.cached),
+    durationMs: typeof data?.durationMs === 'number' ? data.durationMs : undefined,
+  };
+}
+
+/** @returns {Promise<{ hints: { hint1: string, hint2: string, hint3: string }, cached: boolean, durationMs?: number }>} */
+export async function fetchHints(input) {
+  if (!isValidCoordinate(input)) {
+    throw new Error('Valid coordinates are required to fetch hints');
+  }
+
+  const data = await apiPost(ENDPOINTS.GENERATE, { input });
+  return parseGenerateResponse(data);
+}
+
+/** Convenience for components that display hints as an array. */
+export function hintsAsArray(hints) {
+  return [hints.hint1, hints.hint2, hints.hint3];
+}
