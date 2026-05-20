@@ -13,12 +13,13 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build: ../client
     container_name: mapquest-frontend
     ports:
       - "8080:80"
     environment:
       - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-}
+      - REACT_APP_GCP_API_KEY=${REACT_APP_GCP_API_KEY}
     depends_on:
       - backend
     restart: unless-stopped
