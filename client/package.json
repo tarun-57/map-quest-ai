@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "description": "MapQuest AI — geography guessing game",
   "dependencies": {
     "@react-google-maps/api": "^2.19.3",
     "@testing-library/jest-dom": "^5.17.0",
@@ -27,6 +28,7 @@
       "react-app/jest"
     ]
   },
+  "proxy": "http://localhost:3300",
   "browserslist": {
     "production": [
       ">0.2%",

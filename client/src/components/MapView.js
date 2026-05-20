@@ -1,21 +1,16 @@
-import React, { useState, useCallback } from "react";
-import {
-  GoogleMap,
-  Marker,
-  MarkerF,
-  Polyline,
-  useLoadScript,
-} from "@react-google-maps/api";
-import "../styles/MapView.css";
+import React, { useState, useCallback, useMemo } from 'react';
+import { GoogleMap, MarkerF, Polyline } from '@react-google-maps/api';
+import '../styles/MapView.css';
+import flagMarkerUrl from '../assets/flag-green-icon.svg';
 
 const mapContainerStyle = {
-  width: "220px",
-  height: "150px",
+  width: '220px',
+  height: '150px',
 };
 
 const mapContainerStyleHover = {
-  width: "400px",
-  height: "400px",
+  width: '400px',
+  height: '400px',
 };
 
 const mapCenter = {
@@ -23,131 +18,78 @@ const mapCenter = {
   lng: 5.967981999999998,
 };
 
-const options = {
+const baseOptions = {
   disableDefaultUI: true,
   zoomControl: true,
-
   mapId: '455a5b96cd32fd41',
   heading: 0,
 };
 
-
-
-const MapView = ({ streetCoord, setIsMapClicked, setClickedCoords, isGuessed, isHovered }) => {
-
-  // State to store the clicked marker position
+function MapView({
+  streetCoord,
+  setIsMapClicked,
+  setClickedCoords,
+  isGuessed,
+  isHovered,
+}) {
   const [clickCoords, setClickCoords] = useState(null);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
 
-  const toggleModal = (bool) => {
-    setModalIsOpen(!bool);
-  };
-
-//   const closeModal = () => {
-//     setModalIsOpen(false);
-//   };
-
-  // Calculate distance between streetCoord and the clicked coordinates
-  // const distance = clickCoords
-  //   ? calculateDistance(streetCoord, clickCoords)
-  //   : null;
-
-  // Handle map click and set the clicked coordinates
-  const onMapClick = useCallback((event) => {
-    const clickedCoords = {
-      lat: event.latLng.lat(),
-      lng: event.latLng.lng(),
+  const answerIcon = useMemo(() => {
+    if (!streetCoord || !window.google?.maps) return undefined;
+    return {
+      url: flagMarkerUrl,
+      scaledSize: new window.google.maps.Size(32, 40),
+      anchor: new window.google.maps.Point(16, 40),
     };
-    setClickCoords(clickedCoords);
-    setClickedCoords(clickedCoords);
-    setIsMapClicked(true);
-    console.log("Clicked Coordinates: ", clickedCoords);
-    console.log("streetCoord: ", streetCoord);
-  }, []);
+  }, [streetCoord]);
 
-  // if (loadError) return <div>Error loading maps</div>;
-  // if (!isLoaded) return <div>Loading Maps...</div>;
+  const onMapClick = useCallback(
+    (event) => {
+      if (!event.latLng) return;
+      const next = {
+        lat: event.latLng.lat(),
+        lng: event.latLng.lng(),
+      };
+      setClickCoords(next);
+      setClickedCoords(next);
+      setIsMapClicked(true);
+    },
+    [setClickedCoords, setIsMapClicked],
+  );
 
   return (
-    <div
-      className={isHovered ? "map-view-hover" : "map-view"}
-    >
+    <div className={isHovered ? 'map-view-hover' : 'map-view'}>
       <GoogleMap
-        mapContainerStyle={
-          isHovered ? mapContainerStyleHover : mapContainerStyle
-        }
+        mapContainerStyle={isHovered ? mapContainerStyleHover : mapContainerStyle}
         zoom={1}
-        center={mapCenter} // Center the map around streetCoord
-        options={options}
-        onClick={onMapClick} // Map click event to set marker position
+        center={mapCenter}
+        options={baseOptions}
+        onClick={onMapClick}
       >
-        {/* Marker for streetCoord with a custom icon */}
-        {/* <Marker
-            position={streetCoord}
-            // icon={{
-            //   url: "https://fontawesome.com/icons/flag-checkered?f=classic&s=solid",  // Custom icon for streetCoord
-            //   scaledSize: new window.google.maps.Size(40, 40),  // Adjust the size if needed
-            // }}
-          /> */}
+        {clickCoords && isGuessed && streetCoord ? (
+          <MarkerF position={streetCoord} icon={answerIcon} />
+        ) : null}
+        {clickCoords ? <MarkerF position={clickCoords} /> : null}
 
-        {/* Marker for the clicked coordinates */}
-        {clickCoords && (
-          <>
-            {isGuessed ?
-                <MarkerF
-                position={streetCoord}
-                icon={{
-                    url: require("../static/icons/flag.png"),
-                    scaledSize: { width: 32, height: 32 },
-                }}
-                />
-            : <></>}
-            <MarkerF
-              position={clickCoords}
-              // icon={{
-              //     url: "https://fontawesome.com/icons/flag-checkered?f=classic&s=solid",  // Custom icon for streetCoord
-              //     scaledSize: new window.google.maps.Size(40, 40),  // Adjust the size if needed
-              //   }}
-            />
-          </>
-        )}
-
-        {/* Polyline (dotted line) between streetCoord and the clicked coordinates */}
-        {clickCoords && isGuessed && (
+        {clickCoords && isGuessed && streetCoord ? (
           <Polyline
-            path={[streetCoord, clickCoords]} // Define the path between the two points
+            path={[streetCoord, clickCoords]}
             options={{
-              strokeColor: "#000", // Line color
+              strokeColor: '#000',
               strokeOpacity: 0.2,
               strokeWeight: 0.5,
               geodesic: true,
               icons: [
                 {
-                  icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 4 },
-                  offset: "0",
-                  repeat: "20px", // Dotted pattern
+                  icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 4 },
+                  offset: '0',
+                  repeat: '20px',
                 },
               ],
             }}
           />
-        )}
+        ) : null}
       </GoogleMap>
-
-      {/* Show the distance between streetCoord and the clicked point */}
-      {/* {clickCoords && isGuessed && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            left: 10,
-            background: "white",
-            padding: "10px",
-          }}
-        >
-          <h3>Distance between points:</h3>
-          <p>{distance.toFixed(2)} km</p>
-        </div>
-      )} */}
     </div>
   );
 }

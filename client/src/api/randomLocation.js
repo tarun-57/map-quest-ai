@@ -1,20 +1,9 @@
-import { apiUrl } from './config';
+import { ENDPOINTS } from './endpoints';
+import { apiPost } from './http';
 
 export async function fetchRandomLocation(region) {
-  const body = {
+  return apiPost(ENDPOINTS.RANDOM_LOCATION, {
     scope: region?.scope || 'world',
-    value: region?.value || ''
-  };
-  const resp = await fetch(apiUrl('/api/random-location'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    value: region?.value || '',
   });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error || `HTTP ${resp.status}`);
-  }
-  return resp.json();
 }
-
-

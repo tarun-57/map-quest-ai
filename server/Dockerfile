@@ -10,6 +10,7 @@ RUN npm install --omit=dev
 
 # Copy app source
 COPY index.js ./
+COPY src ./src
 COPY data ./data
 
 EXPOSE 3300
