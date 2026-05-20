@@ -1,25 +1,16 @@
 # MapQuest AI
 
-Guess the location from Google Street View and unlock progressively easier AI hints. Play across the world, a continent, or a country (India, USA, UK). Monorepo with `client/` (React) and `server/` (Node/Express).
+Deployed URLs:
+
+Frontend - https://map-quest-ai.vercel.app
+
+Backend - https://map-quest-ai-backend.vercel.app
+
+Guess the location from Google Street View and get AI-powered hints. Choose to play across the world, a continent, or a country (India, USA, UK). Monorepo layout with `client/` (React) and `server/` (Node/Express).
 
 ## Structure
-
-```
-map-quest-ai/
-├── client/          # React app (CRA), nginx in production
-│   └── src/api/     # HTTP client aligned with backend routes
-└── server/          # Express API (controller–service layout)
-    ├── index.js     # Entry point
-    ├── src/
-    │   ├── app.js
-    │   ├── config/
-    │   ├── controllers/
-    │   ├── services/
-    │   ├── routes/
-    │   └── middleware/
-    ├── data/regions/    # Precomputed Street View pools
-    └── scripts/         # Pool builder
-```
+- `client/`: React app 
+- `server/`: Express API with Gemini hints and precomputed Street View pools
 
 ## Requirements
 
@@ -40,12 +31,8 @@ REACT_APP_GCP_API_KEY=your_maps_key
 REACT_APP_API_BASE_URL=
 CORS_ORIGIN=*
 ```
-
-Leave `REACT_APP_API_BASE_URL` empty so the frontend calls same-origin `/api` (proxied by nginx).
-
-2. Build region pools (minimal set to start):
-
-```bash
+2) Build region pools (choose minimal set to start or you can use the existing pools):
+```
 cd server
 GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY \
 INCLUDE=country:India,country:USA,country:UK \
@@ -153,7 +140,7 @@ See [server/README.md](server/README.md) for backend layout, env vars, and pool 
 
 Outputs JSON to `server/data/regions/*.json`, consumed by `/api/random-location`.
 
-## Deployment notes
+
 
 - Frontend nginx proxies `/api/*` to the backend container.
 - Set `CORS_ORIGIN` to your frontend domain in production.
