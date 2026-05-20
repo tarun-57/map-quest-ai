@@ -19,11 +19,17 @@ async function parseErrorMessage(response) {
 }
 
 export async function apiRequest(path, options = {}) {
-  const { headers, ...rest } = options;
+  const { headers, body, signal, ...rest } = options;
+  const isJsonBody =
+    body != null &&
+    !(typeof FormData !== 'undefined' && body instanceof FormData);
+
   const response = await fetch(apiUrl(path), {
     ...rest,
+    body,
+    signal,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isJsonBody ? { 'Content-Type': 'application/json' } : {}),
       ...headers,
     },
   });
@@ -37,12 +43,22 @@ export async function apiRequest(path, options = {}) {
     return null;
   }
 
-  return response.json();
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new ApiError('Invalid JSON response', { status: response.status });
+  }
 }
 
-export function apiPost(path, body) {
+export function apiPost(path, body, options = {}) {
   return apiRequest(path, {
     method: 'POST',
     body: JSON.stringify(body),
+    ...options,
   });
 }

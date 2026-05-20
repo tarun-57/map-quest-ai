@@ -1,45 +1,46 @@
-// StateContext.js
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-// Create Context
-const StateContext = createContext();
+const StateContext = createContext(null);
 
-// Custom Provider
-export const StateProvider = ({ children }) => {
-  const [state, setState] = useState({
-    userName: "",
-    totalRounds: 1,
-    currentRound: 0,
-    coords: {},
-    maxScore: 5000,
-    hintsUnlocked: 0,
-    hints: {
-      hint1: "",
-      hint2: "",
-      hint3: "",
-    },
-    madeAGuess: false,
-    resultData: {},
-    totalScore: 0,
-    rounds: [],
-    region: { scope: 'world', value: '' },
-  });
+const initialState = {
+  userName: '',
+  totalRounds: 1,
+  currentRound: 0,
+  coords: {},
+  maxScore: 5000,
+  hintsUnlocked: 0,
+  hints: {
+    hint1: '',
+    hint2: '',
+    hint3: '',
+  },
+  madeAGuess: false,
+  resultData: {},
+  totalScore: 0,
+  rounds: [],
+  region: { scope: 'world', value: '' },
+};
 
-  const updateState = (key, value) => {
-    console.log("updating state", key, value);
-    // console.log("state before update");
-    // console.log(state[key]);
+export function StateProvider({ children }) {
+  const [state, setState] = useState(initialState);
+
+  const updateState = useCallback((key, value) => {
     setState((prev) => ({ ...prev, [key]: value }));
-    // console.log("state after update");
-    // console.log((prev) => ({ ...prev, [key]: value }));
-  };
+  }, []);
+
+  const value = useMemo(() => ({ state, updateState }), [state, updateState]);
 
   return (
-    <StateContext.Provider value={{ state, updateState }}>
+    <StateContext.Provider value={value}>
       {children}
     </StateContext.Provider>
   );
-};
+}
 
-// Custom Hook for Convenience
-export const useStateContext = () => useContext(StateContext);
+export function useStateContext() {
+  const ctx = useContext(StateContext);
+  if (!ctx) {
+    throw new Error('useStateContext must be used within StateProvider');
+  }
+  return ctx;
+}

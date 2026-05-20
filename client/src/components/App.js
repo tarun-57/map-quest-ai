@@ -1,70 +1,44 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import React, { useState } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import React from 'react';
 import StreetView from './StreetView';
 import GameView from './GameView';
-import MapView from './MapView';
-import ProtectedRoute from "./ProtectedRoute";
-import ResultView from "./ResultView";
-import SummaryView from "./SummaryView";
+import ProtectedRoute from './ProtectedRoute';
+import ResultView from './ResultView';
+import SummaryView from './SummaryView';
 
-const App = () => {
-  const [name, setName] = useState('');
-  const [mode, setMode] = useState('');
-  const [roomID, setRoomID] = useState('');
-  const [socket, setSocket] = useState(null);
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <GameView />,
+  },
+  {
+    path: '/play',
+    element: (
+      <ProtectedRoute>
+        <StreetView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/result',
+    element: (
+      <ProtectedRoute>
+        <ResultView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/summary',
+    element: (
+      <ProtectedRoute>
+        <SummaryView />
+      </ProtectedRoute>
+    ),
+  },
+]);
 
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <GameView />,
-    },
-    {
-      path: "/play",
-      element: (
-        <ProtectedRoute>
-          <StreetView />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/result",
-      element: (
-        <ProtectedRoute>
-          <ResultView />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/summary",
-      element: (
-        <ProtectedRoute>
-          <SummaryView />
-        </ProtectedRoute>
-      ),
-    },
-    // {
-    //   path: "/quiz",
-    //   element: (
-    //     <CheckUserExist>
-    //       <Quiz />
-    //     </CheckUserExist>
-    //   ),
-    // },
-    // {
-    //   path: "/result",
-    //   element: (
-    //     <CheckUserExist>
-    //       <Result />
-    //     </CheckUserExist>
-    //   ),
-    // },
-  ]);
-
-  return (
-    <>
-      <RouterProvider router={router} />
-    </>
-  );
-};
+function App() {
+  return <RouterProvider router={router} />;
+}
 
 export default App;
